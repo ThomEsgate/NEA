@@ -1,0 +1,21 @@
+<!doctype = html>
+<head>
+<title> A thingy </title>
+</head>
+<script>
+const handleSuccess = function(stream) {
+    const context = new AudioContext();
+    const source = context.createMediaStreamSource(stream);
+    window.source = source; //for bug
+    var processor = context.createScriptProcessor(1024, 1, 1);
+    
+    processor = context.destination;
+    source.connect(processor);
+    
+    var buffer = [];
+    var sample_length = 100;
+  };
+
+  navigator.mediaDevices.getUserMedia({ audio: true, video: false })
+      .then(handleSuccess); 
+</script>
