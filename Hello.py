@@ -25,7 +25,7 @@ class USER(db.Model): #database of users
       #self.name = name
       #self.name = pswd
 	   
-error_code = "ERROR"     #from werkzeug generate_password_hash, check_password_hash https://stackoverflow.com/questions/32493631/unboundlocalerror-local-variable-cursor-referenced-before-assignment
+error_code = "ERROR"   #from werkzeug generate_password_hash, check_password_hash https://stackoverflow.com/questions/32493631/unboundlocalerror-local-variable-cursor-referenced-before-assignment
 
 @app.route("/reg", methods=["GET", "POST"])
 def register():
@@ -33,17 +33,19 @@ def register():
       user = USER(name = request.form.get("name")) #https://stackoverflow.com/questions/32493631/unboundlocalerror-local-variable-cursor-referenced-before-assignment
       db.session.add(user)
       db.session.commit()
-      users = USER.query.all()
+   users = USER.query.all()
    return render_template("register.html", users = users)
 
 @app.route("/upd", methods=["GET", "POST"]) #WOOOOOORKKK
 def update():
     newname = request.form.get("newname")
     oldname = request.form.get("oldname")
+    print(newname)
+    print(oldname)
     user = USER.query.filter_by(name = oldname).first()
     user.name = newname
     db.session.commit()
-    return redirect("/upd")
+    return redirect("/reg")
 
 
  #~~~SONGS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
