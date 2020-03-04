@@ -1,0 +1,44 @@
+<audio id="player" controls></audio>
+<script>
+  const player = document.getElementById('player'); //what does this do?
+  function handleSuccess(stream) {
+    var context = new AudioContext();
+    var analyser = context.createAnalyser();
+   
+    var processor = context.createScriptProcessor(bufferLength, 1, 1);
+    var source = context.createMediaStreamSource(stream);
+    
+    analyser.fftSize = 2048 // 16384 fast fourier transform size
+       
+    var bufferLength = analyser.fftSize;
+    var dataArray = new Float32Array(bufferLength);
+    analyser.getFloatFrequencyData(dataArray);
+    
+    
+    //GETUSERMEDIA ISN'T FIRING - GET EVERYTHING IN ORDER I BELIVE IN YOU :) - ME, 21:26:57 22/11/19 aww thanks past Thom - ME 12:25:02 23/11/19
+    
+    analyser.minDecibels = -90;
+    analyser.maxDecibels = -10;
+    analyser.smoothingTimeConstant = 0.5;
+    console.log(bufferLength);
+    //analyser.connect(processor);
+    var i = 0;
+    //context.resume();
+    processor.onaudioprocess = function(e) {
+        console.log(e.inputBuffer);
+        analyser.getFloatFrequencyData(dataArray);
+        
+	    processor.connect(context.destination); 
+        console.log(dataArray[i]);
+        console.log(i);
+        i++;
+      };
+      source.connect(processor);
+    };
+    
+  navigator.mediaDevices.getUserMedia({ audio: true}).then(handleSuccess(stream))
+  {
+	
+	console.log('got user media');
+  };
+</script>

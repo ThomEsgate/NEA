@@ -1,0 +1,38 @@
+body {
+	background-color: #839FA3;
+	font-size: 20px;
+	margin: 0;
+}
+
+a {
+	color: #E6E6E6;
+	transition: all 1s;
+}
+
+li:hover a {
+	color: #141414;
+	
+}
+
+ul {
+	list-style-type:none;
+	padding-left: 0;
+	
+}
+ 
+li {
+	background-color: #729E42;
+	margin: 20px 0px 20px 0px;
+	padding: 10px;
+	border-color: #28394D;
+	border-width: 4px;
+	border-style: solid;
+	transition: all 0.8s;
+}
+
+li:hover {
+	background-color: #32CD32;
+	padding: 15px;
+
+}
+

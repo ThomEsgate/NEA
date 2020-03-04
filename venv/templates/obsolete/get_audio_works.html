@@ -1,0 +1,34 @@
+<script>
+  if (navigator.mediaDevices) {
+    console.log('getUserMedia is supported');
+    
+    //getUserMedia takes 3 arguments
+    //1. constraints 
+    navigator.getUserMedia ({audio: true}, 
+    //2. successCallback
+    
+    function(stream)
+    {
+      var context = new AudioContext();
+      var source = context.createMediaStreamSource(stream);
+      var analyser = context.createAnalyser(); //analyser to find the frequency of a buffer
+      source.connect(analyser);
+      source.connect(context.destination);
+      
+      var i = 0;
+    while(1) {
+   
+	  analyser.fftSize = 2048 //fast fourier transform size
+      var bufferLength = analyser.frequencyBinCount;
+      var dataArray = new Float32Array(bufferLength);
+      analyser.getFloatFrequencyData(dataArray);
+      console.log(-dataArray[i]);
+      i++;
+	  }
+	},
+      
+      //3. errorCallback
+      function(err){console.warn('getUserMedia is NOT supported')}); 
+    
+  };
+</script>

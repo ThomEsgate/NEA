@@ -1,0 +1,139 @@
+<html>
+<head>
+<script type = "text/javascript">
+	
+//function to pause the program for n milliseconds
+function sleep(milliseconds) {
+	let startTime = new Date().getTime();
+	while (true)   {
+		let timePassed = new Date().getTime() - startTime
+		if (timePassed > milliseconds)
+		break;
+	}
+}
+
+function Initialise() {
+if (navigator.mediaDevices) {
+				
+	function getNote(bufferLength, analyser, context, notesArray, timeBetweenSamples) {
+		var recording = true;
+		var silenceTime = 0;
+		
+		while (recording) {
+			//create a new array and use the analyser to fill it with byte frequency data   // start and stop buttoons
+			var dataArray = new Uint8Array(bufferLength);
+			// array to store Frequency values	
+			analyser.getByteFrequencyData(dataArray);
+			
+			var i = 0;
+			var highestdB = 0;
+			var highesti = 0;
+			while(i < analyser.frequencyBinCount) {
+				//console.log((dataArray[i])); //display all values in array for debugging
+				++i;
+				if (highestdB < dataArray[i]) {
+					highestdB = dataArray[i];
+					highesti = i;
+				}
+			}
+			//find frequency by finding the loudest played frequency
+			var freq = (context.sampleRate / analyser.fftSize) * highesti
+			
+			//convert frequency to a note on a keyboard
+			var notePosOnKeyboard = Math.round(12 * (Math.log(freq / 440)/Math.log(2)) + 69); //A is 69th key on a keyboard
+			var note = notesArray[notePosOnKeyboard % 12]; // % is modulus
+			var octaveNo = Math.floor(notePosOnKeyboard / 12);
+			
+			//if the microphone hears nothing then
+			if (note == undefined) {
+				console.log("Undefined note (too quiet?)");
+				++silenceTime;}
+			else {
+				notesource = "../static/images/" + note + ".png";
+				showImage(notesource,
+						note +" Image");
+				document.getElementById("noteId").value = note;
+				
+				console.log(note.concat(octaveNo));
+				silenceTime = 0;}
+			
+			document.getElementById("noteId").innerHTML = note; // .innerHTML allows js code to manipulate website being displayed
+			sleep (timeBetweenSamples);
+			if (silenceTime > 9) {recording = false}; //stops recording after 100 samples of hearing nothing
+			document.getElementById("buttonStop").onclick = function(){recording = false};
+		}
+		console.log("Stopped recording"); //when recording stops it leaves the loop
+		console.log("1");
+		sleep(1000)
+		return
+	      }
+
+    function showImage(src, alt) {
+		var myimage = new Image(src, alt);
+		myimage.src = src;
+		myimage.width = 64;
+		myimage.height = 64;
+		myimage.alt = alt;
+		//console.log("in showImage");
+		document.body.appendChild(myimage); //adds image to <body>
+	}
+     
+    function noUserMedia(){
+		console.warn('getUserMedia is NOT supported :(');
+		document.getElementById("noteId").innerHTML = 'GetUserMedia not supported :(';
+	}
+    
+    //getUserMedia takes 3 arguments
+    //1. constraints 
+    navigator.getUserMedia ({audio: true},
+     
+    //2. successCallback
+    function(stream){
+		console.log('getUserMedia is supported');
+		
+		var notesArray = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+		
+		var context = new AudioContext(); // controls creation of audio nodes and contains execution of audio processing
+		var source = context.createMediaStreamSource(stream); // sets source of data to be input from microphone
+		var analyser = context.createAnalyser(); //analyser can be used to find the frequency of a buffer
+		var track = stream.getTracks()[0]; //gets the single audio track as a variable to stop recording
+		
+		analyser.minDecibels = -50;
+		//analyser.maxDecibels = -10;
+		//analyser.smoothingTimeConstant = 0.8;
+		context.sampleRate = 48000
+      
+		source.connect(analyser);
+		//source.connect(context.destination);	//allows for playback of microphone data through speakers
+      
+		analyser.fftSize = 8192 //fast fourier transform size - 16384 is best
+      
+		var bufferLength = analyser.frequencyBinCount;
+		var timeBetweenSamples = 25; // in milliseconds
+		//var dataArray = new Uint8Array(bufferLength);
+											
+		//getNote repeats while recording, and will exit the function when the user wants recording to stop
+		
+		setInterval( function() {getNote(bufferLength, analyser, context, notesArray, timeBetweenSamples)}, 250 )	
+		
+		track.stop(); //stops recording																							
+	
+    },//3. errorCallback - 
+    
+    function(err){noUserMedia()});
+	return
+  };//end of getting user media
+  console.log("navigator.mediaDevices error");
+};//initialise end
+	
+//onmouseup ="getNote()"
+</script>
+</head>
+
+<body>
+	<input type = "text" id= "noteId" Note goes here! >
+		<button onmousedown = "Initialise()"  > Click (and hold?) </button> 
+		<button id = "buttonStop" > Stop </button>
+</body>
+
+</html>
