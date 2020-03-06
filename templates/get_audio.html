@@ -2,21 +2,10 @@
 <head>
 	
 <script type = "text/javascript">
-	
-//function to pause the program for n milliseconds
-function sleep(milliseconds) {
-	let startTime = new Date().getTime();
-	while (true)   {
-		let timePassed = new Date().getTime() - startTime
-		if (timePassed > milliseconds)
-		break;
-	}
-}
-
 function metronomeCountIn() { //can showImage
 	counter = 1;
 	function metLoop(){
-		document.getElementById("noteId").value = (((counter % 4) + 1) + " and a");
+		document.getElementById("metronomeId").value = (((counter % 4) + 1) + " and a");
 		counter++;
 		if (counter == 5) { //stop executing
 			clearInterval(window.run_metLoop);
@@ -32,7 +21,7 @@ function metronomeCountIn() { //can showImage
 	/*function beatIt() {console.log(i + " and a");
 		beat.play;
 		console.log("inside");
-		sleep(samples_per_beat * timeBetweenSamples);
+		sleep(samples_per_beat * timeBetweenSamples); //no don't use sleep
 		beat.pause();
 		beat.currentTime = 0;
 		++i;
@@ -40,8 +29,7 @@ function metronomeCountIn() { //can showImage
 		}	*/
 }
 
-function getNote(bufferLength, analyser, context, notesArray, timeBetweenSamples, sampleNo, songID, track) { //can showImage
-	if (songId !== "404") {var done_showSong = showSong(songId);} //shows the notes to play on the stave
+function getNote(bufferLength, analyser, context, notesArray, timeBetweenSamples, sampleNo, songID, track) {
 	songID = parseInt(songID) //string to int
 	
 	switch(songID) {
@@ -71,27 +59,37 @@ function getNote(bufferLength, analyser, context, notesArray, timeBetweenSamples
 		var noteSampleNo = 1;
 		var noteSampleIncorrect = 0		
 		
+		
+		//var dummyVar;
+		if ((songID == 01) || (songID == 02)) {
+			var playingSong = true;
+			showSong(songId, currentNote); //shows first note
+		}
+		//console.log(dummyVar = ((songID == 01) || (songID == 02)) ? "Playing a song " + songID:"No Song");
 		function recordingMadness() {
+			function findFreqFromDataArray(dataArray){
+				//goes through entire dataArray of dB values and finds the loudest one (the actual frequency being played, ignoring background noise)
+				var highestdB = 0;
+				var highesti = 0;
+				for(var i = 0; i < analyser.frequencyBinCount; i++) { //for the length of
+					if (highestdB < dataArray[i]) {
+						highestdB = dataArray[i];
+						highesti = i;
+					}
+				}
+				//find frequency by finding the loudest played frequency
+				var freq = (context.sampleRate / analyser.fftSize) * highesti
+				return freq;
+
+			}
+			
 			//create a new array and use the analyser to fill it with byte frequency data   // start and stop buttoons
 			var dataArray = new Uint8Array(bufferLength);
 			// array to store Frequency values	
-			analyser.getByteFrequencyData(dataArray); //frequencies of one place in time
+			analyser.getByteFrequencyData(dataArray); //stores the frequencies of one place in time into an array
 			
-			var i = 0;	//goes through entire dataArray of dB values and finds the loudest one (the actual frequency being played, ignoring background noise)
-			var highestdB = 0;
-			var highesti = 0;
-			while(i < analyser.frequencyBinCount) {
-				//console.log((dataArray[i])); //display all values in array for debugging
-				++i;
-				if (highestdB < dataArray[i]) {
-					highestdB = dataArray[i];
-					highesti = i;
-				}
-			}
 			
-			//find frequency by finding the loudest played frequency
-			var freq = (context.sampleRate / analyser.fftSize) * highesti
-			
+			var freq = findFreqFromDataArray(dataArray);
 			//convert frequency to a note on a keyboard
 			var notePosOnKeyboard = Math.round(12 * (Math.log(freq / 440)/Math.log(2)) + 69); //A is 69th key on a keyboard
 			var note = notesArray[notePosOnKeyboard % 12]; // % is modulus
@@ -99,12 +97,8 @@ function getNote(bufferLength, analyser, context, notesArray, timeBetweenSamples
 			
 			//PLAYING ALONG* - Astral Alley: 100 bpm - 1 sample per 50 milliseconds = 20 samples/second = 24 samples per beat
 			++sampleNo; // a sample has been taken
-			var samples_per_beat = (1000/timeBetweenSamples)*(120/bpm);
+			var samples_per_beat = (1000/timeBetweenSamples)*(120/bpm);																			//<=== Dodgy???
 			var beatNo = Math.floor(sampleNo/samples_per_beat) + 1;
-			
-			//var dummyVar;
-			if ((songID == 01) || (songID == 02)) {var playingSong = true};
-			//console.log(dummyVar = ((songID == 01) || (songID == 02)) ? "Playing a song " + songID:"No Song");
 			
 			if (playingSong) {
 				if (sampleNo == 1) { console.log(songArray[0][0]); //song name
@@ -112,28 +106,34 @@ function getNote(bufferLength, analyser, context, notesArray, timeBetweenSamples
 									metronomeCountIn(bpm, timeBetweenSamples);}
 								
 				//SEEING IF THE NOTE FITS THE SONG
-				samples_for_note = (samples_per_beat * songArray[currentNote][1]); //e.g. total samples for a 0.5 beat note is samples per beat
+				samples_for_note = (samples_per_beat * songArray[currentNote][1]); //e.g. total samples for a 0.5 beat note is samples per beat * 0
 				if (noteSampleNo < samples_for_note) { //if still sampling one note
 					++noteSampleNo
 					if (note !== songArray[currentNote][0]){ //wrong note
 						++noteSampleIncorrect;
 					} 
 				}
-				
-				else { //finished sampling note
-					if ((noteSampleIncorrect/noteSampleNo) > 0.25) {// if more than 25% incorrect, keep waiting for user to play correct note
-						console.log("Wrong! Play a " + songArray[currentNote][0])
+				else {// finished sampling for the note
+					function finishedSamplingNote() {
+						if ((noteSampleIncorrect/noteSampleNo) > 0.25) {return false;}// if more than 25% incorrect, keep waiting for user to play correct note
+						else {return true;} 
 					}
-					else { //correct note
+					
+					var correctlyPlayed = finishedSamplingNote();
+					noteSampleIncorrect = 0;
+					if (correctlyPlayed) {
 						console.log(songArray[currentNote][0] + " done! Now play " + songArray[currentNote + 1][0]);
 						++currentNote; //next note in songArray	
+						showSong(songId, currentNote, note, octaveNo);//show next note to play
 					}
-					if (songArray.length <= currentNote + 2) { //if reached the end of the song
-						console.log("End of song reached");
-						recording = false;
+					else {
+						console.log("Wrong! Play a " + songArray[currentNote][0])
 					}
 					noteSampleNo = 0;
-					noteSampleIncorrect = 0;
+					if (songArray.length <= currentNote) { //if reached the end of the song
+						console.log("End of song");
+						playingSong = false;
+					}
 				}	
 			}
 			//if the microphone hears nothing then
@@ -141,31 +141,16 @@ function getNote(bufferLength, analyser, context, notesArray, timeBetweenSamples
 				console.log("Undefined note (too quiet?)");
 				++silenceTime;}
 			else {
-				if (note.charAt(1) === ("#")) {// sharp notes have s instead of # in their filename
-					note = note.replace('#', 's');
-				}	
-			
 				silenceTime = 0;
-			
-				if (!(playingSong)) {console.log(note.concat(octaveNo)); notesource = "../static/images/" + note + "q.png";
-				
-				showImage(notesource,
-						  note +" Image");
-				document.getElementById("noteId").value = note;}; //if not playing a song (free mode), show individual notes being played
-			}
-				
-			document.getElementById("noteId").innerHTML = note; // .innerHTML allows js code to manipulate website being displayed
-			
-			
-			sleep (timeBetweenSamples);
-			
-			
-			if (silenceTime > 19) {track.stop(); //stops recording	
-				clearInterval(run_recordingMadness)}; //stops recording after 20 samples of hearing nothing
-		}	
-
-		var run_recordingMadness = setInterval(recordingMadness, timeBetweenSamples);
+				if (!(playingSong)) {console.log(note.concat(octaveNo)); notesource = "../static/images/" + note + "q.png";}
+				document.getElementById("noteId").innerHTML = note; // .innerHTML allows js code to manipulate website being displayed
 		
+				if (silenceTime > 19) {track.stop(); //stops recording	
+					clearInterval(run_recordingMadness)}; //stops recording after 20 samples of hearing nothing
+	
+				document.getElementById("noteId").value = note;}; //show individual notes being played
+			}	
+		var run_recordingMadness = setInterval(recordingMadness, timeBetweenSamples);
 		return
 } 
    
@@ -222,17 +207,7 @@ if (navigator.mediaDevices) {
   };//end of getting user media
   
   console.log("navigator.mediaDevices error");
-};//initialise end
-
-/*function checkType(input){
-	if(typeof input !== "undefined") {
-		console.log("SongId = "+ input);
-		clearInterval(run_checkType); //stop executing
-		var getNoteValuesArray = Initialise(input);
-		return getNoteValuesArray;
-	}
-	else {console.log("undefined songId");}
-}*/
+};
 
 //CTRL+D!!!
 
@@ -245,7 +220,7 @@ function noteLengthFromNote (noteLengthNum){
 	}
 }
 
-function showSong(songId) {
+function showSong(songId, noteInSong, note, octave) {
 	switch(songId) {
 		case "01":
 		//Astral Alley - 4/4 time sig., 100bpm, in A Minor
@@ -254,7 +229,6 @@ function showSong(songId) {
 													["E", 2], ["D", 2], ["A", 3], ["C", 0.5], ["D", 0.5], //...
 													["C", 1], ["A", 6]];
 			var bpm = 110;
-			console.log("Astral");
 			break;
 		//Lost Woods - 4/4, 130 bpm, in F
 		case "02":
@@ -263,48 +237,33 @@ function showSong(songId) {
 													["B", 0.5], ["G", 0.5], ["E", 2.5], ["D", 0.5],											
 													["E", 0.5], ["G", 0.5], ["E", 3]];
 			var bpm = 130;
-			console.log("Woods");
 			break;
 		}
 		var noteLength = "";
-		for (i = 1; i < songArray.length; i++) {
-			noteLength = noteLengthFromNote(songArray[i][1]);
-			console.log(noteLength);
-			showImage("../static/images/" + songArray[i][0] + noteLength + ".png", songArray[0][0]);
+		noteLength = noteLengthFromNote(songArray[noteInSong][1]);
+		console.log(noteLength);
+		
+		switch(note) {
+			case "B",
 		}
-	return "done_showSong";
+		
+		showImage("../static/images/" + + ".png", songArray[noteInSong][0], pixelTranslate);
+	return;
 }
 
 var i = 0;
 var songId = '{{ sentSongId }}'; //gets song id from /choose
 Initialise(songId);
 
-notesource = "../static/images/seal.jpg";
-
-//CALLBACKS CALLBACKS!!!!!!!!!!!!?
-
-//var run_showImage = setInterval( function() { showImage(notesource, notesource)}, 500);
-
-/*var counter = 0;
-function sayHello(){
-	alert("Hello");
-	counter++;
-	if (counter == 2) {
-		clearInterval(run_sayHello); //stop executing
-	}
-}
-var run_sayHello = setInterval(sayHello, 750); */
-	
-
-//onmouseup ="getNote()"
 //type = "audio/mpeg"
 
-async function showImage(src1, alt1) { //show a note
-	var myimage = new Image(src1, alt1);
-	myimage.src = src1;
+async function showImage(src, alt, pixelTranslate) { //show a note
+	var myimage = document.createElement('img');
+	myimage.src = src;
 	myimage.width = 64;
 	myimage.height = 128;
-	myimage.alt = alt1;
+	myimage.alt = alt1
+	myimage.style.transform = 'translateY(' + pixelTranslate + 'px)'
 	document.body.appendChild(myimage); //adds image to <body>
 }
 
@@ -362,6 +321,7 @@ li:hover {
 		<source src = "../static/sounds/beat.mp3" > 
 	</audio>
 
+	<input type = "text" id= "metronomeId" Note goes here! </input>
 	<input type = "text" id= "noteId" Note goes here! </input>
 		<button onmousedown = "checkType()"  > </button>
 		
