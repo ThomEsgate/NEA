@@ -115,7 +115,7 @@ function getNote(bufferLength, analyser, context, notesArray, timeBetweenSamples
 				}
 				else {// finished sampling for the note
 					function finishedSamplingNote() {
-						if ((noteSampleIncorrect/noteSampleNo) > 0.25) {return false;}// if more than 25% incorrect, keep waiting for user to play correct note
+						if ((noteSampleIncorrect/noteSampleNo) > 0.25) {return true;}// if more than 25% incorrect, keep waiting for user to play correct note
 						else {return true;} 
 					}
 					
@@ -124,7 +124,7 @@ function getNote(bufferLength, analyser, context, notesArray, timeBetweenSamples
 					if (correctlyPlayed) {
 						console.log(songArray[currentNote][0] + " done! Now play " + songArray[currentNote + 1][0]);
 						++currentNote; //next note in songArray	
-						showSong(songId, currentNote, note, octaveNo);//show next note to play
+						showSong(songId, currentNote, songArray[currentNote][0], freq);//show next note to play
 					}
 					else {
 						console.log("Wrong! Play a " + songArray[currentNote][0])
@@ -220,7 +220,7 @@ function noteLengthFromNote (noteLengthNum){
 	}
 }
 
-function showSong(songId, noteInSong, note, octave) {
+function showSong(songId, noteInSong, note, freq) {
 	switch(songId) {
 		case "01":
 		//Astral Alley - 4/4 time sig., 100bpm, in A Minor
@@ -240,14 +240,26 @@ function showSong(songId, noteInSong, note, octave) {
 			break;
 		}
 		var noteLength = "";
+		var orientation = "";
 		noteLength = noteLengthFromNote(songArray[noteInSong][1]);
-		console.log(noteLength);
+		if (freq > 500) {var orientation = flipped;} //note is high enough that the notation changes and the note appears upside down to make space for it
 		
 		switch(note) {
-			case "B",
+			case "A#" : var pixelTranslate = -7;
+			case "A"  : var pixelTranslate = -14;
+			case "G#" : var pixelTranslate = -21;
+			case "G"  : var pixelTranslate = -28;
+			case "F#" : var pixelTranslate = -35;
+			case "F"  : var pixelTranslate = -49;
+			case "E"  : var pixelTranslate = -56;
+			case "D#" : var pixelTranslate = -63;
+			case "D"  : var pixelTranslate = -70;
+			case "C#" : var pixelTranslate = -77;
+			case "C"  : var pixelTranslate = -84;
+			default   : var pixelTranslate = 10; 
 		}
-		
-		showImage("../static/images/" + + ".png", songArray[noteInSong][0], pixelTranslate);
+		console.log(pixelTranslate);
+		showImage("../static/images/q" + orientation +".png", noteLength + orientation, pixelTranslate);
 	return;
 }
 
@@ -262,8 +274,9 @@ async function showImage(src, alt, pixelTranslate) { //show a note
 	myimage.src = src;
 	myimage.width = 64;
 	myimage.height = 128;
-	myimage.alt = alt1
-	myimage.style.transform = 'translateY(' + pixelTranslate + 'px)'
+	myimage.alt = alt;
+	console.log(pixelTranslate);
+	myimage.style.transformtranslateY = '(' + pixelTranslate + 'px)';
 	document.body.appendChild(myimage); //adds image to <body>
 }
 
