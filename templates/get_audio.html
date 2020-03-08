@@ -1,8 +1,7 @@
-<html>
+<html>																						
 <head>
-	
 <script type = "text/javascript">
-function metronomeCountIn() { //can showImage
+function metronomeCountIn(bpm) { 																		//can VIEW > SHOW INDENTATION GUIDES
 	counter = 1;
 	function metLoop(){
 		document.getElementById("metronomeId").value = (((counter % 4) + 1) + " and a");
@@ -11,7 +10,7 @@ function metronomeCountIn() { //can showImage
 			clearInterval(window.run_metLoop);
 		}
 	}
-	var run_metloop = setInterval(metLoop, 750);
+	var run_metloop = setInterval(metLoop, (120/bpm) * 500);
 	
 	beat = document.getElementById("beatAudio");
 	//samples_per_beat = (1000/timeBetweenSamples)*(120/bpm)
@@ -52,15 +51,11 @@ function getNote(bufferLength, analyser, context, notesArray, timeBetweenSamples
 		}
 		
 		var recording = true;
-
-		
 		var silenceTime = 1;
 		var currentNote = 1;
 		var noteSampleNo = 1;
 		var noteSampleIncorrect = 0		
 		
-		
-		//var dummyVar;
 		if ((songID == 01) || (songID == 02)) {
 			var playingSong = true;
 			showSong(songId, currentNote); //shows first note
@@ -97,13 +92,13 @@ function getNote(bufferLength, analyser, context, notesArray, timeBetweenSamples
 			
 			//PLAYING ALONG* - Astral Alley: 100 bpm - 1 sample per 50 milliseconds = 20 samples/second = 24 samples per beat
 			++sampleNo; // a sample has been taken
-			var samples_per_beat = (1000/timeBetweenSamples)*(120/bpm);																			//<=== Dodgy???
+			var samples_per_beat = (1000/timeBetweenSamples)*(120/bpm) * 0.5;																			//<=== Dodgy???
 			var beatNo = Math.floor(sampleNo/samples_per_beat) + 1;
 			
 			if (playingSong) {
 				if (sampleNo == 1) { console.log(songArray[0][0]); //song name
 									console.log(songArray[0][1]); //bpm
-									metronomeCountIn(bpm, timeBetweenSamples);}
+									metronomeCountIn(bpm);}
 								
 				//SEEING IF THE NOTE FITS THE SONG
 				samples_for_note = (samples_per_beat * songArray[currentNote][1]); //e.g. total samples for a 0.5 beat note is samples per beat * 0
@@ -114,42 +109,42 @@ function getNote(bufferLength, analyser, context, notesArray, timeBetweenSamples
 					} 
 				}
 				else {// finished sampling for the note
-					function finishedSamplingNote() {
+					function PlayedCorrectly() {
 						if ((noteSampleIncorrect/noteSampleNo) > 0.25) {return true;}// if more than 25% incorrect, keep waiting for user to play correct note
 						else {return true;} 
 					}
-					
-					var correctlyPlayed = finishedSamplingNote();
 					noteSampleIncorrect = 0;
-					if (correctlyPlayed) {
-						console.log(songArray[currentNote][0] + " done! Now play " + songArray[currentNote + 1][0]);
-						++currentNote; //next note in songArray	
-						showSong(songId, currentNote, songArray[currentNote][0], freq);//show next note to play
+					if (PlayedCorrectly()) {
+						if (songArray.length <= currentNote + 1) { //if reached the end of the song
+							console.log("End of song");
+							playingSong = false;
+						}
+						else {
+							console.log(songArray[currentNote][0] + " done! Now play " + songArray[currentNote + 1][0]);
+							++currentNote; //next note in songArray	
+							showSong(songId, currentNote, songArray[currentNote][0], freq);//show next note to play
+						}	
 					}
 					else {
 						console.log("Wrong! Play a " + songArray[currentNote][0])
 					}
 					noteSampleNo = 0;
-					if (songArray.length <= currentNote) { //if reached the end of the song
-						console.log("End of song");
-						playingSong = false;
-					}
 				}	
 			}
-			//if the microphone hears nothing then
-			if (note == undefined) {
+			if (note == undefined) { //cannot approximate note if getByteFrequencyData calculates nothing
 				console.log("Undefined note (too quiet?)");
 				++silenceTime;}
 			else {
 				silenceTime = 0;
 				if (!(playingSong)) {console.log(note.concat(octaveNo)); notesource = "../static/images/" + note + "q.png";}
 				document.getElementById("noteId").innerHTML = note; // .innerHTML allows js code to manipulate website being displayed
-		
+			}
 				if (silenceTime > 19) {track.stop(); //stops recording	
 					clearInterval(run_recordingMadness)}; //stops recording after 20 samples of hearing nothing
 	
-				document.getElementById("noteId").value = note;}; //show individual notes being played
-			}	
+				document.getElementById("noteId").value = note;
+			//show individual notes being played
+		}	
 		var run_recordingMadness = setInterval(recordingMadness, timeBetweenSamples);
 		return
 } 
@@ -215,7 +210,7 @@ function noteLengthFromNote (noteLengthNum){
 	switch(noteLengthNum) {
 		//console.log(noteLengthNum);
 		case 1 : noteLength = "q"; return noteLength; break;
-		case 2 : noteLength = "8"; return noteLength; break;
+		case 0.5 : noteLength = "8"; return noteLength; break;
 		default : return "q";
 	}
 }
@@ -242,24 +237,25 @@ function showSong(songId, noteInSong, note, freq) {
 		var noteLength = "";
 		var orientation = "";
 		noteLength = noteLengthFromNote(songArray[noteInSong][1]);
-		if (freq > 500) {var orientation = flipped;} //note is high enough that the notation changes and the note appears upside down to make space for it
 		
-		switch(note) {
-			case "A#" : var pixelTranslate = -7;
-			case "A"  : var pixelTranslate = -14;
-			case "G#" : var pixelTranslate = -21;
-			case "G"  : var pixelTranslate = -28;
-			case "F#" : var pixelTranslate = -35;
-			case "F"  : var pixelTranslate = -49;
-			case "E"  : var pixelTranslate = -56;
-			case "D#" : var pixelTranslate = -63;
-			case "D"  : var pixelTranslate = -70;
-			case "C#" : var pixelTranslate = -77;
-			case "C"  : var pixelTranslate = -84;
-			default   : var pixelTranslate = 10; 
+		if (freq > 500) {var orientation = "flipped";} //note is high enough that the notation changes and the note appears upside down to make space for it    //THIS FLIPS THE NOTE IF THE LAST NOTE THE USER PLAYED IS A HIGH NOTE NOT THE NEW NOTE TO DISPLAY
+		
+		switch(songArray[noteInSong][0]) {
+			case 'A#' : var pixelTranslate = 0;  break;
+			case "A"  : var pixelTranslate = 0;  break;
+			case "G#" : var pixelTranslate = 7;  break;
+			case "G"  : var pixelTranslate = 7;  break;
+			case "F#" : var pixelTranslate = 14; break;
+			case 'F'  : var pixelTranslate = 14; break;
+			case "E"  : var pixelTranslate = 21; break;
+			case "D#" : var pixelTranslate = 28; break;
+			case "D"  : var pixelTranslate = 28; break;
+			case "C#" : var pixelTranslate = -14; break;
+			case "C"  : var pixelTranslate = -14; break;
+			case 'B'  : var pixelTranslate = -7; break;
+			default   : console.log("NoteError");break;
 		}
-		console.log(pixelTranslate);
-		showImage("../static/images/q" + orientation +".png", noteLength + orientation, pixelTranslate);
+		showImage("../static/images/" + noteLength + orientation +".png", note + noteLength + orientation, pixelTranslate);
 	return;
 }
 
@@ -276,7 +272,7 @@ async function showImage(src, alt, pixelTranslate) { //show a note
 	myimage.height = 128;
 	myimage.alt = alt;
 	console.log(pixelTranslate);
-	myimage.style.transformtranslateY = '(' + pixelTranslate + 'px)';
+	myimage.style.transform = 'translateY(' + pixelTranslate + 'px)';
 	document.body.appendChild(myimage); //adds image to <body>
 }
 
@@ -302,13 +298,11 @@ a {
 
 li:hover a {
 	color: #141414;
-	
 }
 
 ul {
 	list-style-type:none;
 	padding-left: 0;
-	
 }
  
 li {
@@ -323,12 +317,10 @@ li {
 li:hover {
 	background-color: #32CD32;
 	padding: 15px;
-
 }
 </style>
 
 <body>
-	
 	
 	<audio id = "beatAudio">
 		<source src = "../static/sounds/beat.mp3" > 
