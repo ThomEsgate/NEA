@@ -60,7 +60,6 @@ function getNote(bufferLength, analyser, context, notesArray, timeBetweenSamples
 			var playingSong = true;
 			showSong(songId, currentNote); //shows first note
 		}
-		//console.log(dummyVar = ((songID == 01) || (songID == 02)) ? "Playing a song " + songID:"No Song");
 		function recordingMadness() {
 			function findFreqFromDataArray(dataArray){
 				//goes through entire dataArray of dB values and finds the loudest one (the actual frequency being played, ignoring background noise)
@@ -75,9 +74,7 @@ function getNote(bufferLength, analyser, context, notesArray, timeBetweenSamples
 				//find frequency by finding the loudest played frequency
 				var freq = (context.sampleRate / analyser.fftSize) * highesti
 				return freq;
-
 			}
-			
 			//create a new array and use the analyser to fill it with byte frequency data   // start and stop buttoons
 			var dataArray = new Uint8Array(bufferLength);
 			// array to store Frequency values	
@@ -108,16 +105,17 @@ function getNote(bufferLength, analyser, context, notesArray, timeBetweenSamples
 						++noteSampleIncorrect;
 					} 
 				}
-				else {// finished sampling for the note
+				else{// finished sampling for the note
 					function PlayedCorrectly() {
-						if ((noteSampleIncorrect/noteSampleNo) > 0.25) {return true;}// if more than 25% incorrect, keep waiting for user to play correct note
+						if ((noteSampleIncorrect/noteSampleNo) > 0.25) {return false;}// if more than 25% incorrect, keep waiting for user to play correct note
 						else {return true;} 
 					}
-					noteSampleIncorrect = 0;
+					
 					if (PlayedCorrectly()) {
 						if (songArray.length <= currentNote + 1) { //if reached the end of the song
 							console.log("End of song");
-							playingSong = false;
+							track.stop(); //stops recording	
+							clearInterval(run_recordingMadness);
 						}
 						else {
 							console.log(songArray[currentNote][0] + " done! Now play " + songArray[currentNote + 1][0]);
@@ -129,6 +127,7 @@ function getNote(bufferLength, analyser, context, notesArray, timeBetweenSamples
 						console.log("Wrong! Play a " + songArray[currentNote][0])
 					}
 					noteSampleNo = 0;
+					noteSampleIncorrect = 0
 				}	
 			}
 			if (note == undefined) { //cannot approximate note if getByteFrequencyData calculates nothing
@@ -141,9 +140,7 @@ function getNote(bufferLength, analyser, context, notesArray, timeBetweenSamples
 			}
 				if (silenceTime > 19) {track.stop(); //stops recording	
 					clearInterval(run_recordingMadness)}; //stops recording after 20 samples of hearing nothing
-	
 				document.getElementById("noteId").value = note;
-			//show individual notes being played
 		}	
 		var run_recordingMadness = setInterval(recordingMadness, timeBetweenSamples);
 		return
@@ -204,8 +201,6 @@ if (navigator.mediaDevices) {
   console.log("navigator.mediaDevices error");
 };
 
-//CTRL+D!!!
-
 function noteLengthFromNote (noteLengthNum){
 	switch(noteLengthNum) {
 		//console.log(noteLengthNum);
@@ -259,22 +254,22 @@ function showSong(songId, noteInSong, note, freq) {
 	return;
 }
 
-var i = 0;
-var songId = '{{ sentSongId }}'; //gets song id from /choose
-Initialise(songId);
-
-//type = "audio/mpeg"
-
 async function showImage(src, alt, pixelTranslate) { //show a note
 	var myimage = document.createElement('img');
 	myimage.src = src;
 	myimage.width = 64;
 	myimage.height = 128;
 	myimage.alt = alt;
-	console.log(pixelTranslate);
 	myimage.style.transform = 'translateY(' + pixelTranslate + 'px)';
 	document.body.appendChild(myimage); //adds image to <body>
 }
+
+
+var i = 0;
+var songId = '{{ sentSongId }}'; //gets song id from /choose
+Initialise(songId);
+
+//type = "audio/mpeg"
 
 </script>
 

@@ -48,13 +48,25 @@ li:hover {
     </form>
 	<br>
     <h1>Users</h1>
+    <table>
     {% for user in users %}
-      <p>{{user.name}}</p>
-      <form method="POST" action="/upd">
-		<input type="hidden" value="{{user.name}}" name="oldname">
-		<input type="text" value="{{user.name}}" name="newname">
-		<input type="Submit" value="Update">
-	  </form>
+	<tr>
+		<td>
+			<p>{{user.name}}</p>
+			<form method="POST" action="/upd" style = "display: inline">
+				<input type="hidden" value="{{user.name}}" name="oldname">
+				<input type="text" value="{{user.name}}" name="newname">
+				<input type="Submit" value="Update">
+			</form>
+		</td>
+		<td>
+			<form method = "POST" action = "/del" style = "display: inline">
+				<input type = "hidden" value = "{{user.name}}" name = "name">
+				<input type = "Submit" value = "Delete">
+			</form>
+		</td>
+	</tr>
     {% endfor %}
+    </table>
   </body>
 </html>

@@ -2,6 +2,7 @@ import os
 from flask import Flask, redirect, url_for, request, render_template, make_response, abort
 #from flask import sqlite3
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.dialects.postgresql import ARRAY
 
 #~~~DATABASE STUFF~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #set projects path, sqlite:/// determines the database engine being used
@@ -24,29 +25,51 @@ class USER(db.Model): #database of users
    #def __init__(self, name, pswd):
       #self.name = name
       #self.name = pswd
-	   
+
+
+class SONG(db.Model): #database of songs
+   songId = db.Column(db.Integer, primary_key = True)
+   songArray = db.Column(ARRAY(db.String(32)))
 error_code = "ERROR"   #from werkzeug generate_password_hash, check_password_hash https://stackoverflow.com/questions/32493631/unboundlocalerror-local-variable-cursor-referenced-before-assignment
 
 @app.route("/reg", methods=["GET", "POST"])
 def register():
+   books = None
    if request.form:
-      user = USER(name = request.form.get("name")) #https://stackoverflow.com/questions/32493631/unboundlocalerror-local-variable-cursor-referenced-before-assignment
-      db.session.add(user)
-      db.session.commit()
+      try:
+         user = USER(name = request.form.get("name")) #https://stackoverflow.com/questions/32493631/unboundlocalerror-local-variable-cursor-referenced-before-assignment
+         db.session.add(user)
+         db.session.commit()
+         
+      except Exception as exptn:
+         print("~~~ERROR ADDING USER~~~")
+         print(exptn)
+         
    users = USER.query.all()
    return render_template("register.html", users = users)
 
 @app.route("/upd", methods=["GET", "POST"]) #WOOOOOORKKK
 def update():
-    newname = request.form.get("newname")
-    oldname = request.form.get("oldname")
-    print(newname)
-    print(oldname)
-    user = USER.query.filter_by(name = oldname).first()
-    user.name = newname
-    db.session.commit()
-    return redirect("/reg")
-
+   try:
+      newname = request.form.get("newname")
+      oldname = request.form.get("oldname")
+      user = USER.query.filter_by(name = oldname).first()
+      user.name = newname
+      db.session.commit()
+      
+   except Exception as exptn:
+      print("~~~ERROR UPDATING USER DETAILS~~~")
+      print(exptn)
+      
+   return redirect("/reg")
+@app.route("/del", methods = ["POST"])
+def delete():
+   name = request.form.get("name")
+   user = USER.query.filter_by(name = name).first()
+   print(user)
+   db.session.delete(user)
+   db.session.commit()
+   return redirect("/reg")
 
  #~~~SONGS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 @app.route('/choose') #pick song
