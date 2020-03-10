@@ -15,22 +15,29 @@ app.config['SQLALCHEMY_DATABASE_URI'] = database_file #where database is stored
 db = SQLAlchemy(app)
 
 class USER(db.Model): #database of users
-   #id = db.Column(db.Integer, primary_key = True, unique = True, nullable = False)
-   name = db.Column(db.String(24), primary_key = True)
-   pswd = db.Column(db.String(64))
-	
+   id = db.Column(db.Integer, primary_key = True)
+   name = db.Column(db.String(24))
+   #pswd = db.Column(db.String(64))
+   #usersongs = db.relationship('SONGUSER', backref = 'owner')
+   
    def __repr__(self): #for representing user as a string
-      return "<Name: {}>".format(self.name)
-	
-   #def __init__(self, name, pswd):
-      #self.name = name
-      #self.name = pswd
+      return "<Name: {}>".format(self.name)   
 
+class SONGUSER(db.Model):
+   id = db.Column(db.Integer, primary_key = True)
+   owner_id = db.Column(ARRAY(db.Integer), db.ForeignKey('user.id'))
+   #songuserArray = db.Column(ARRAY(db.String(24), dimensions = 2), db.ForeignKey('song.SongArray'))
 
 class SONG(db.Model): #database of songs
    songId = db.Column(db.Integer, primary_key = True)
-   songArray = db.Column(ARRAY(db.String(32)))
-error_code = "ERROR"   #from werkzeug generate_password_hash, check_password_hash https://stackoverflow.com/questions/32493631/unboundlocalerror-local-variable-cursor-referenced-before-assignment
+   #songArray = db.Column(ARRAY(db.String(32), dimensions = 2))
+   
+   
+   
+   
+   
+   
+#from werkzeug generate_password_hash, check_password_hash https://stackoverflow.com/questions/32493631/unboundlocalerror-local-variable-cursor-referenced-before-assignment
 
 @app.route("/reg", methods=["GET", "POST"])
 def register():
