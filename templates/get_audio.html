@@ -48,6 +48,10 @@ function getNote(bufferLength, analyser, context, notesArray, timeBetweenSamples
 													["E", 0.5], ["G", 0.5], ["E", 3]];
 			var bpm = 130;
 			break;
+		case "03":
+			var songArray =[["Latest Trick", "120"],["A", 0.5], ["C#", 0.5], ["D#", 0.5], ["E", 0.5], ["A", 0.5], ["D#", 0.5], ["C#", 0.5]];
+			var bpm = 120;
+			break;
 		}
 		
 		var recording = true;
@@ -56,7 +60,7 @@ function getNote(bufferLength, analyser, context, notesArray, timeBetweenSamples
 		var noteSampleNo = 1;
 		var noteSampleIncorrect = 0		
 		
-		if ((songID == 01) || (songID == 02)) {
+		if ((songID == 01) || (songID == 02) || (songID == 03)) {
 			var playingSong = true;
 			showSong(songId, currentNote); //shows first note
 		}
@@ -162,7 +166,9 @@ if (navigator.mediaDevices) {
     function(stream){
 		console.log('getUserMedia is supported');
 		
-		var notesArray = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+		var notesArray = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]; //C instrument
+		//var notesArray = ["A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"]; //Eb instrument
+		
 		
 		var context = new AudioContext(); // controls creation of audio nodes and contains execution of audio processing
 		var source = context.createMediaStreamSource(stream); // sets source of data to be input from microphone
@@ -228,29 +234,39 @@ function showSong(songId, noteInSong, note, freq) {
 													["E", 0.5], ["G", 0.5], ["E", 3]];
 			var bpm = 130;
 			break;
+			
+		case "03":
+			var songArray =[["Latest Trick", "120"],["A", 0.5], ["C#", 0.5], ["D#", 0.5], ["E", 0.5], ["A", 0.5], ["D#", 0.5], ["C#", 0.5]];
+			var bpm = 120;
+			break;
 		}
 		var noteLength = "";
 		var orientation = "";
 		noteLength = noteLengthFromNote(songArray[noteInSong][1]);
 		
-		if (freq > 500) {var orientation = "flipped";} //note is high enough that the notation changes and the note appears upside down to make space for it    //THIS FLIPS THE NOTE IF THE LAST NOTE THE USER PLAYED IS A HIGH NOTE NOT THE NEW NOTE TO DISPLAY
+		//if (freq > 500) {var orientation = "flipped";} //note is high enough that the notation changes and the note appears upside down to make space for it    //THIS FLIPS THE NOTE IF THE LAST NOTE THE USER PLAYED IS A HIGH NOTE NOT THE NEW NOTE TO DISPLAY
 		
 		switch(songArray[noteInSong][0]) {
-			case "A#" : var pixelTranslate = 0;  break;
-			case "A"  : var pixelTranslate = 0;  break;
-			case "G#" : var pixelTranslate = 7;  break;
-			case "G"  : var pixelTranslate = 7;  break;
-			case "F#" : var pixelTranslate = 14; break;
-			case "F"  : var pixelTranslate = 14; break;
-			case "E"  : var pixelTranslate = 21; break;
-			case "D#" : var pixelTranslate = 28; break;
-			case "D"  : var pixelTranslate = 28; break;
-			case "C#" : var pixelTranslate = -14;break;
-			case "C"  : var pixelTranslate = -14;break;
-			case "B"  : var pixelTranslate = -7; break;
-			default   : console.log("NoteError");break;
+			case "A#" : var pixelTranslate = 0;  var sharp = true; break;
+			case "A"  : var pixelTranslate = 0;  var sharp = false; break;
+			case "G#" : var pixelTranslate = 7;  var sharp = true; break;
+			case "G"  : var pixelTranslate = 7;  var sharp = false; break;
+			case "F#" : var pixelTranslate = 14; var sharp = true; break;
+			case "F"  : var pixelTranslate = 14; var sharp = false; break;
+			case "E"  : var pixelTranslate = 21; var sharp = false; break;
+			case "D#" : var pixelTranslate = 28; var sharp = true; break;
+			case "D"  : var pixelTranslate = 28; var sharp = false; break;
+			case "C#" : var pixelTranslate = -14;var sharp = true; break;
+			case "C"  : var pixelTranslate = -14;var sharp = false; break;
+			case "B"  : var pixelTranslate = -7; var sharp = false; break;
+			default   : console.log("NoteError");var sharp = false; break;
 		}
-		showImage("../static/images/" + noteLength + orientation +".png", note + noteLength + orientation, pixelTranslate);
+		if (sharp) {
+				showImage("../static/images/" + noteLength + "sharp" +orientation +".png", note + noteLength + orientation, pixelTranslate);
+		}
+		else {
+			showImage("../static/images/" + noteLength + orientation +".png", note + noteLength + orientation, pixelTranslate);
+		}
 	return;
 }
 

@@ -86,7 +86,7 @@ def choose():
    if request.method == 'GET':
       song = request.args.get('sng') #() for GET
       
-      if song in ['01', '02', '404']:
+      if song in ['01', '02', '03', '404']:
          return redirect(url_for('get_mic_data',songId = song))
    return render_template('choose_song.html')
 
