@@ -138,7 +138,7 @@ function getNote(bufferLength, analyser, context, notesArray, timeBetweenSamples
 				if (!(playingSong)) {console.log(note.concat(octaveNo)); notesource = "../static/images/" + note + "q.png";}
 				document.getElementById("noteId").innerHTML = note; // .innerHTML allows js code to manipulate website being displayed
 			}
-				if (silenceTime > 19) {track.stop(); //stops recording	
+				if (silenceTime > 99) {track.stop(); //stops recording	
 					clearInterval(run_recordingMadness)}; //stops recording after 20 samples of hearing nothing
 				document.getElementById("noteId").value = note;
 		}	
@@ -236,18 +236,18 @@ function showSong(songId, noteInSong, note, freq) {
 		if (freq > 500) {var orientation = "flipped";} //note is high enough that the notation changes and the note appears upside down to make space for it    //THIS FLIPS THE NOTE IF THE LAST NOTE THE USER PLAYED IS A HIGH NOTE NOT THE NEW NOTE TO DISPLAY
 		
 		switch(songArray[noteInSong][0]) {
-			case 'A#' : var pixelTranslate = 0;  break;
+			case "A#" : var pixelTranslate = 0;  break;
 			case "A"  : var pixelTranslate = 0;  break;
 			case "G#" : var pixelTranslate = 7;  break;
 			case "G"  : var pixelTranslate = 7;  break;
 			case "F#" : var pixelTranslate = 14; break;
-			case 'F'  : var pixelTranslate = 14; break;
+			case "F"  : var pixelTranslate = 14; break;
 			case "E"  : var pixelTranslate = 21; break;
 			case "D#" : var pixelTranslate = 28; break;
 			case "D"  : var pixelTranslate = 28; break;
-			case "C#" : var pixelTranslate = -14; break;
-			case "C"  : var pixelTranslate = -14; break;
-			case 'B'  : var pixelTranslate = -7; break;
+			case "C#" : var pixelTranslate = -14;break;
+			case "C"  : var pixelTranslate = -14;break;
+			case "B"  : var pixelTranslate = -7; break;
 			default   : console.log("NoteError");break;
 		}
 		showImage("../static/images/" + noteLength + orientation +".png", note + noteLength + orientation, pixelTranslate);
