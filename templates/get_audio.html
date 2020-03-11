@@ -48,9 +48,10 @@ function getNote(bufferLength, analyser, context, notesArray, timeBetweenSamples
 													["E", 0.5], ["G", 0.5], ["E", 3]];
 			var bpm = 130;
 			break;
-		case "03":
-			var songArray =[["Latest Trick", "120"],["A", 0.5], ["C#", 0.5], ["D#", 0.5], ["E", 0.5], ["A", 0.5], ["D#", 0.5], ["C#", 0.5]];
+		case 03:
+			var songArray =[["Latest Trick", "120"],["A", 0.5], ["C#", 0.5], ["D#", 0.5], ["E", 1], ["A", 0.5], ["D#", 1], ["C#", 0.5], ["E", 0.5]];
 			var bpm = 120;
+			console.log("Trick");
 			break;
 		}
 		
@@ -64,7 +65,7 @@ function getNote(bufferLength, analyser, context, notesArray, timeBetweenSamples
 			var playingSong = true;
 			showSong(songId, currentNote); //shows first note
 		}
-		function recordingMadness() {
+		function repeatRecord() {
 			function findFreqFromDataArray(dataArray){
 				//goes through entire dataArray of dB values and finds the loudest one (the actual frequency being played, ignoring background noise)
 				var highestdB = 0;
@@ -119,7 +120,7 @@ function getNote(bufferLength, analyser, context, notesArray, timeBetweenSamples
 						if (songArray.length <= currentNote + 1) { //if reached the end of the song
 							console.log("End of song");
 							track.stop(); //stops recording	
-							clearInterval(run_recordingMadness);
+							clearInterval(run_repeatRecord);
 						}
 						else {
 							console.log(songArray[currentNote][0] + " done! Now play " + songArray[currentNote + 1][0]);
@@ -143,10 +144,10 @@ function getNote(bufferLength, analyser, context, notesArray, timeBetweenSamples
 				document.getElementById("noteId").innerHTML = note; // .innerHTML allows js code to manipulate website being displayed
 			}
 				if (silenceTime > 99) {track.stop(); //stops recording	
-					clearInterval(run_recordingMadness)}; //stops recording after 20 samples of hearing nothing
+					clearInterval(run_repeatRecord)}; //stops recording after 100 samples of hearing nothing
 				document.getElementById("noteId").value = note;
 		}	
-		var run_recordingMadness = setInterval(recordingMadness, timeBetweenSamples);
+		var run_repeatRecord= setInterval(repeatRecord, timeBetweenSamples);
 		return
 } 
    
@@ -236,7 +237,7 @@ function showSong(songId, noteInSong, note, freq) {
 			break;
 			
 		case "03":
-			var songArray =[["Latest Trick", "120"],["A", 0.5], ["C#", 0.5], ["D#", 0.5], ["E", 0.5], ["A", 0.5], ["D#", 0.5], ["C#", 0.5]];
+			var songArray =[["Latest Trick", "120"],["A", 0.5], ["C#", 0.5], ["D#", 0.5], ["E", 1], ["A", 0.5], ["D#", 1], ["C#", 0.5], ["E", 0.5]];
 			var bpm = 120;
 			break;
 		}
@@ -246,26 +247,37 @@ function showSong(songId, noteInSong, note, freq) {
 		
 		//if (freq > 500) {var orientation = "flipped";} //note is high enough that the notation changes and the note appears upside down to make space for it    //THIS FLIPS THE NOTE IF THE LAST NOTE THE USER PLAYED IS A HIGH NOTE NOT THE NEW NOTE TO DISPLAY
 		
-		switch(songArray[noteInSong][0]) {
-			case "A#" : var pixelTranslate = 0;  var sharp = true; break;
-			case "A"  : var pixelTranslate = 0;  var sharp = false; break;
-			case "G#" : var pixelTranslate = 7;  var sharp = true; break;
-			case "G"  : var pixelTranslate = 7;  var sharp = false; break;
-			case "F#" : var pixelTranslate = 14; var sharp = true; break;
-			case "F"  : var pixelTranslate = 14; var sharp = false; break;
-			case "E"  : var pixelTranslate = 21; var sharp = false; break;
-			case "D#" : var pixelTranslate = 28; var sharp = true; break;
-			case "D"  : var pixelTranslate = 28; var sharp = false; break;
-			case "C#" : var pixelTranslate = -14;var sharp = true; break;
-			case "C"  : var pixelTranslate = -14;var sharp = false; break;
-			case "B"  : var pixelTranslate = -7; var sharp = false; break;
-			default   : console.log("NoteError");var sharp = false; break;
+		function getHeight(songArray, noteInSong){
+			switch(songArray[noteInSong][0]) {
+				case "A#" : var pixelTranslate = 0;  break;
+				case "A"  : var pixelTranslate = 0;  break;
+				case "G#" : var pixelTranslate = 7;  break;
+				case "G"  : var pixelTranslate = 7;  break;
+				case "F#" : var pixelTranslate = 14; break;
+				case "F"  : var pixelTranslate = 14; break;
+				case "E"  : var pixelTranslate = 21; break;
+				case "D#" : var pixelTranslate = 28; break;
+				case "D"  : var pixelTranslate = 28; break;
+				case "C#" : var pixelTranslate = -14;break;
+				case "C"  : var pixelTranslate = -14;break;
+				case "B"  : var pixelTranslate = -7; break;
+				default   : console.log("NoteError");break;
+				}
+			return pixelTranslate;
+		}	
+		pixelTranslate = getHeight(songArray, noteInSong);
+		
+		function isSharp(note){
+			if (["B#", 'C#', 'D#', "F#", "G#", "A#"].includes(note)) {var sharp = true}
+			else{var sharp = false};
+			return sharp;
 		}
+		sharp = isSharp(note)
 		if (sharp) {
 				showImage("../static/images/" + noteLength + "sharp" +orientation +".png", note + noteLength + orientation, pixelTranslate);
 		}
 		else {
-			showImage("../static/images/" + noteLength + orientation +".png", note + noteLength + orientation, pixelTranslate);
+			showImage("../static/images/" + noteLength + orientation +".png", note + noteLength + orientation, pixelTranslate,);
 		}
 	return;
 }
@@ -279,7 +291,6 @@ async function showImage(src, alt, pixelTranslate) { //show a note
 	myimage.style.transform = 'translateY(' + pixelTranslate + 'px)';
 	document.body.appendChild(myimage); //adds image to <body>
 }
-
 
 var i = 0;
 var songId = '{{ sentSongId }}'; //gets song id from /choose
