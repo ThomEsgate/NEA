@@ -49,10 +49,12 @@ function getNote(bufferLength, analyser, context, notesArray, timeBetweenSamples
 			var bpm = 130;
 			break;
 		case 03:
-			var songArray =[["Latest Trick", "120"],["A", 0.5], ["C#", 0.5], ["D#", 0.5], ["E", 1], ["A", 0.5], ["D#", 1], ["C#", 0.5], ["E", 0.5]];
+			var songArray =[["Latest Trick", "120"] ,["A", 0.5], ["C#", 0.5], ["D#", 0.5], ["E", 0.5], ["C#", 0.5], ["D#", 0.5], ["C#", 0.5], [undefined, 0.5],
+													 ["C#", 0.5], ["D#", 0.5],["E", 0.5], ["F#", 1], ["E", 0.5], ["D#", 1], ["C#", 1], 
+													 ["B", 1], ["C#", 0.5], ["F#", 0.5], ["E", 1]];
 			var bpm = 120;
 			console.log("Trick");
-			break;
+			break
 		}
 		
 		var recording = true;
@@ -115,7 +117,7 @@ function getNote(bufferLength, analyser, context, notesArray, timeBetweenSamples
 						if ((noteSampleIncorrect/noteSampleNo) > 0.25) {return false;}// if more than 25% incorrect, keep waiting for user to play correct note
 						else {return true;} 
 					}
-					
+					console.log(note);
 					if (PlayedCorrectly()) {
 						if (songArray.length <= currentNote + 1) { //if reached the end of the song
 							console.log("End of song");
@@ -137,6 +139,7 @@ function getNote(bufferLength, analyser, context, notesArray, timeBetweenSamples
 			}
 			if (note == undefined) { //cannot approximate note if getByteFrequencyData calculates nothing
 				console.log("Undefined note (too quiet?)");
+				note = "silence";
 				++silenceTime;}
 			else {
 				silenceTime = 0;
@@ -237,7 +240,9 @@ function showSong(songId, noteInSong, note, freq) {
 			break;
 			
 		case "03":
-			var songArray =[["Latest Trick", "120"],["A", 0.5], ["C#", 0.5], ["D#", 0.5], ["E", 1], ["A", 0.5], ["D#", 1], ["C#", 0.5], ["E", 0.5]];
+			var songArray =[["Latest Trick", "120"] ,["A", 0.5], ["C#", 0.5], ["D#", 0.5], ["E", 0.5], ["C#", 0.5], ["D#", 0.5], ["C#", 0.5], [undefined, 0.5],
+													 ["C#", 0.5], ["D#", 0.5],["E", 0.5], ["F#", 1], ["E", 0.5], ["D#", 1], ["C#", 1], 
+													 ["B", 1], ["C#", 0.5], ["F#", 0.5], ["E", 1]];
 			var bpm = 120;
 			break;
 		}
@@ -261,7 +266,8 @@ function showSong(songId, noteInSong, note, freq) {
 				case "C#" : var pixelTranslate = -14;break;
 				case "C"  : var pixelTranslate = -14;break;
 				case "B"  : var pixelTranslate = -7; break;
-				default   : console.log("NoteError");break;
+				case undefined :var pixelTranslate = 0; console.log("silence");  break;
+				default   : console.log("NoteError"); console.log(songArray[noteInSong][0]); break;
 				}
 			return pixelTranslate;
 		}	
@@ -273,11 +279,16 @@ function showSong(songId, noteInSong, note, freq) {
 			return sharp;
 		}
 		sharp = isSharp(note)
-		if (sharp) {
-				showImage("../static/images/" + noteLength + "sharp" +orientation +".png", note + noteLength + orientation, pixelTranslate);
+		if (songArray[noteInSong][0] == undefined){
+			showImage("../static/images/seal.jpg", note + noteLength + orientation, pixelTranslate);
 		}
 		else {
-			showImage("../static/images/" + noteLength + orientation +".png", note + noteLength + orientation, pixelTranslate,);
+			if (sharp) {
+				showImage("../static/images/" + noteLength + "sharp" +orientation +".png", note + noteLength + orientation, pixelTranslate);
+			}
+			else {
+				showImage("../static/images/" + noteLength + orientation +".png", note + noteLength + orientation, pixelTranslate,);
+			}
 		}
 	return;
 }
