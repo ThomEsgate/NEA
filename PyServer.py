@@ -79,21 +79,28 @@ def delete():
    return redirect("/reg")
 
  #~~~SONGS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+error_code = ""
 @app.route('/choose') #pick song
 def choose():
    #if request.method == 'POST':
       #song = request.form['sng'] #[] for POST
    if request.method == 'GET':
       song = request.args.get('sng') #() for GET
+      mode = request.args.get('mde')
+      print(error_code)
+      print("error_code ^^^^^")
       
-      if song in ['01', '02', '03', '404']:
-         return redirect(url_for('get_mic_data',songId = song))
-   return render_template('choose_song.html')
-
+      if song in ['01', '02', '03', '404'] and mode in ['C', 'Eb']:
+         return redirect(url_for('get_mic_data',songId = song, sentMode = mode))
+         
+   return render_template('choose_song.html', error_code = "please insert a valid songId and Transpose")
+   
 @app.route('/microphone/<songId>') #play song
-def get_mic_data(songId):
+def get_mic_data(songId, modeId):
 	#return 'Welcome %s' % songId
-    return render_template('get_audio.html', sentSongId = songId)
+    print(song)
+    print(mode)
+    return render_template('get_audio.html', sentSongId = songId, sentMode = modeId)
     
 	  
 #~~~~~CURRENTLY UNUSED~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#

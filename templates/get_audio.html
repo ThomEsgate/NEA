@@ -1,7 +1,7 @@
 <html>																						
 <head>
 <script type = "text/javascript">
-function metronomeCountIn(bpm) { 																		//can VIEW > SHOW INDENTATION GUIDES
+function metronomeCountIn(bpm) { 																	
 	counter = 1;
 	function metLoop(){
 		document.getElementById("metronomeId").value = (((counter % 4) + 1) + " and a");
@@ -114,13 +114,12 @@ function getNote(bufferLength, analyser, context, notesArray, timeBetweenSamples
 				}
 				else{// finished sampling for the note
 					function PlayedCorrectly() {
-						if (noteSampleIncorrect/noteSampleNo > 0.25 && songArray[currentNote][0] != "silence") {return false;}// if more than 25% incorrect, keep waiting for user to play correct note
+						if (noteSampleIncorrect/noteSampleNo > 0.25 && songArray[currentNote][0] != "silence") {return true;}// if more than 25% incorrect, keep waiting for user to play correct note
 						else if (note = "silence" && songArray[currentNote][0] == "silence") {
 								return true;
 							}
 							else {return true;} 
 					}
-					console.log(note);
 					if (PlayedCorrectly()) {
 						if (songArray.length <= currentNote + 1) { //if reached the end of the song
 							console.log("End of song");
@@ -283,7 +282,7 @@ function showSong(songId, noteInSong, note, freq) {
 		}
 		sharp = isSharp(note)
 		if (songArray[noteInSong][0] == undefined){
-			showImage("../static/images/seal.jpg", note + noteLength + orientation, pixelTranslate);
+			console.log("wait for silence");
 		}
 		else {
 			if (sharp) {
@@ -308,6 +307,9 @@ async function showImage(src, alt, pixelTranslate) { //show a note
 
 var i = 0;
 var songId = '{{ sentSongId }}'; //gets song id from /choose
+var mode = '{{ sentMode }}';
+console.log(sentSongId);
+console.log(sentMode);
 Initialise(songId);
 
 //type = "audio/mpeg"
@@ -357,15 +359,8 @@ li:hover {
 </style>
 
 <body>
-	
-	<audio id = "beatAudio">
-		<source src = "../static/sounds/beat.mp3" > 
-	</audio>
-
 	<input type = "text" id= "metronomeId" Note goes here! </input>
 	<input type = "text" id= "noteId" Note goes here! </input>
-		<button onmousedown = "checkType()"  > </button>
-		
 		<br>
 </body>
 
