@@ -72,14 +72,14 @@ def update():
 @app.route("/del", methods = ["POST"])
 def delete():
    name = request.form.get("name")
-   user = USER.query.filter_by(name = name).first()
+   user = USER.query.filter_by(name = name).first() 
    print(user)
    db.session.delete(user)
    db.session.commit()
    return redirect("/reg")
 
  #~~~SONGS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-error_code = ""
+errorcode = ""
 @app.route('/choose') #pick song
 def choose():
    #if request.method == 'POST':
@@ -87,15 +87,13 @@ def choose():
    if request.method == 'GET':
       song = request.args.get('sng') #() for GET
       mode = request.args.get('mde')
-      print(error_code)
-      print("error_code ^^^^^")
       
       if song in ['01', '02', '03', '404'] and mode in ['C', 'Eb']:
-         return redirect(url_for('get_mic_data',songId = song, sentMode = mode))
+         redirect(url_for('get_mic_data',songId = song, modeId = mode))
          
-   return render_template('choose_song.html', error_code = "please insert a valid songId and Transpose")
+   return render_template('choose_song.html', error_code = errorcode)
    
-@app.route('/microphone/<songId>') #play song
+@app.route('/microphone/<songId>/<modeId>') #play song
 def get_mic_data(songId, modeId):
 	#return 'Welcome %s' % songId
     print(song)
