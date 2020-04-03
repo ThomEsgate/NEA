@@ -114,7 +114,7 @@ function getNote(bufferLength, analyser, context, notesArray, timeBetweenSamples
 				}
 				else{// finished sampling for the note
 					function PlayedCorrectly() {
-						if (noteSampleIncorrect/noteSampleNo > 0.25 && songArray[currentNote][0] != "silence") {return true;}// if more than 25% incorrect, keep waiting for user to play correct note
+						if (noteSampleIncorrect/noteSampleNo > 0.25 && songArray[currentNote][0] != "silence") {return false;}// if more than 25% incorrect, keep waiting for user to play correct note
 						else if (note = "silence" && songArray[currentNote][0] == "silence") {
 								return true;
 							}
@@ -179,9 +179,14 @@ if (navigator.mediaDevices) {
     function(stream){
 		console.log('getUserMedia is supported');
 		
-		var notesArray = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]; //C instrument
-		//var notesArray = ["A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"]; //Eb instrument
-		
+		//checking the transpose - which instrument is played
+		if (modeId == 'C') { 
+			var notesArray = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]; //C instrument
+		} else if (modeId == 'Eb') {
+			var notesArray = ["A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"]; //Eb instrument
+		} else {
+			console.log("Mode error - unregocnised mode: '" + modeId + "'");
+		}
 		
 		var context = new AudioContext(); // controls creation of audio nodes and contains execution of audio processing
 		var source = context.createMediaStreamSource(stream); // sets source of data to be input from microphone
@@ -313,7 +318,18 @@ async function showImage(src, alt, pixelTranslate) { //show a note
 }
 
 var i = 0;
-var songId = '{{ sentSongId }}'; //gets song id from /choose
+var sentData = '{{ sentSongId }}'; //gets song id from /choose
+var songId = sentData[0] + sentData[1];
+console.log(songId);
+if (sentData.length == 3) {
+	var modeId = sentData[2];
+} else if (sentData.length == 4) {
+	var modeId = sentData[2] + sentData[3];
+} else {
+	var modeId = 'sentData erroneous length';
+	console.log("sentData wrong length! - length = " + sentData.length);
+}
+console.log(modeId);
 Initialise(songId);
 
 //type = "audio/mpeg"

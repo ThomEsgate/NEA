@@ -2,7 +2,7 @@
    <body>
       <form action = "choose" method = "get">
          <p>Enter SongId:</p>
-         <p><input type = "song" name = "sng" /></p>
+         <p><input type = "song" id = "textbox" type name = "sng" /></p>
          <p><input type = "submit" value = "submit" /></p>
          02 = Lost Woods
          <br>
@@ -11,6 +11,10 @@
          404 = No song, just get the notes you're playing
          <br>
       </form>
-     
+    <button onmousedown = "changeTextTo('02')"  >02</button> 
+	<button onmousedown = "changeTextTo('03')"  >03</button>
+	<button onmousedown = "changeTextTo('404')" >04</button>
+	<button onmousedown = "changeTextTo('C')"   >C</button>
+	<button onmousedown = "changeTextTo('Eb')"  >Eb</button>
    </body>
 </html>
